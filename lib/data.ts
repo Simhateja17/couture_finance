@@ -6,6 +6,16 @@ import { Agency, DashboardSummary, FinanceEntry, MonthlyChartData, PendingPaymen
 
 export const ACTIVE_AGENCY_COOKIE = "active_agency_id";
 
+type AgencyJoinResult = { name?: string | null } | Array<{ name?: string | null }> | null;
+
+function getAgencyNameFromJoinResult(agencies: AgencyJoinResult): string {
+  if (Array.isArray(agencies)) {
+    return agencies[0]?.name ?? "Untitled Agency";
+  }
+
+  return agencies?.name ?? "Untitled Agency";
+}
+
 export async function getAgencyIdForCurrentUser() {
   const supabase = await createClient();
   const {
@@ -26,7 +36,7 @@ export async function getAgencyIdForCurrentUser() {
 
   const memberships = (data ?? []).map((row) => ({
     id: row.agency_id,
-    name: Array.isArray(row.agencies) ? row.agencies[0]?.name ?? "Untitled Agency" : row.agencies?.name ?? "Untitled Agency",
+    name: getAgencyNameFromJoinResult(row.agencies as AgencyJoinResult),
     role: row.role,
     created_at: row.created_at
   }));
@@ -64,7 +74,7 @@ export async function getAgenciesForCurrentUser(): Promise<Agency[]> {
 
   return (data ?? []).map((row) => ({
     id: row.agency_id,
-    name: Array.isArray(row.agencies) ? row.agencies[0]?.name ?? "Untitled Agency" : row.agencies?.name ?? "Untitled Agency",
+    name: getAgencyNameFromJoinResult(row.agencies as AgencyJoinResult),
     role: row.role,
     created_at: row.created_at
   }));
